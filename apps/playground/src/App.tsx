@@ -16,6 +16,7 @@ import { ThemePicker } from "./ThemePicker";
 import { useThemeChoice } from "./theme-choice";
 import "./widgets";
 import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
+import { biriApp } from "./apps/biri";
 
 // The apps, per-theme icons, theme builder, and Settings icons all come from
 // the shared @benos/demo config so the playground and the docs embed
@@ -268,7 +269,6 @@ const bottomSolo: Named[] = [
   ["milktea", "奶茶"],
   ["calc", "计算器"],
   ["aifeng", "艾锋"],
-  ["biri", "Biri"],
 ];
 
 const aboutMeApp = placeholderApp("about-me", "苯达", {
@@ -285,6 +285,7 @@ const personalApps: OsApp[] = [
   ...STACK.map(([id, name]) => placeholderApp(id, name)),
   ...HARDWARE.map(([id, name]) => placeholderApp(id, name)),
   ...bottomSolo.map(([id, name]) => placeholderApp(id, name)),
+  biriApp,
 ];
 
 // Utility apps stay registered (reachable from Launchpad tail, Spotlight,
