@@ -1,10 +1,13 @@
 import { useMemo } from "react";
 import type { App as OsApp, OsTheme } from "@benos/core";
+import { useWindowManager } from "@benos/core";
 import {
+  AppIconTile,
   Desktop,
   getSystemWindow,
   registerSystemWindow,
   Settings,
+  useApps,
   useTheme,
 } from "@benos/desktop";
 import { buildDemoTheme, localIcon, pngIcon } from "@benos/demo";
@@ -133,20 +136,87 @@ const helloApp: OsApp = {
 };
 
 // Placeholder window body for every personal app. The real content is
-// authored per app later; until then each opens to this one line.
+// authored per app later; until then each opens to the "施工中" note plus a
+// row of the apps that have actually shipped (icons rendered like Launchpad).
+//
+// Maintain `shippedAppIds` as each app is finished — it drives the row every
+// placeholder advertises; clicking a tile opens that app.
+const shippedAppIds = ["biri"];
+
 function ComingSoonContent() {
+  const theme = useTheme();
+  const apps = useApps();
+  const { openWindow } = useWindowManager();
+  const shipped = apps.filter((a) => shippedAppIds.includes(a.id));
   return (
     <div
       style={{
         height: "100%",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: 15,
-        opacity: 0.78,
+        gap: 26,
+        padding: 20,
+        boxSizing: "border-box",
       }}
     >
-      内容施工中🚧
+      <div style={{ fontSize: 15, opacity: 0.78 }}>内容施工中🚧</div>
+      {shipped.length > 0 && (
+        <div style={{ display: "grid", gap: 14, justifyItems: "center" }}>
+          <div style={{ fontSize: 13, opacity: 0.6 }}>可以先玩这些内容：</div>
+          <div
+            style={{
+              display: "flex",
+              gap: 20,
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            {shipped.map((app) => (
+              <button
+                key={app.id}
+                type="button"
+                onClick={() => openWindow({ kind: "app", appId: app.id })}
+                style={{
+                  appearance: "none",
+                  border: 0,
+                  background: "transparent",
+                  padding: 0,
+                  width: 84,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 8,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                <AppIconTile
+                  app={
+                    app.iconFormat
+                      ? app
+                      : { ...app, iconFormat: "image" as const, icon: app.icon }
+                  }
+                  size={64}
+                />
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: theme.palette.textPrimary,
+                    maxWidth: 84,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {app.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -173,7 +243,8 @@ const launchpadApp: OsApp = {
 };
 
 // Personal homepage apps. Every entry is a registered placeholder (opens to
-// "内容施工中"); real content is authored one app at a time. default.png is
+// the "还没上线" note + shipped-app list); real content is authored one app at
+// a time. default.png is
 // derived from icon/default.icns (macOS grid: transparent padding + rounded
 // art baked in, hence "macgrid").
 // Authored icons live at icon/<id>.png (converted from the user's icns/webp

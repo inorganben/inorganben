@@ -606,14 +606,15 @@ export function Window({ win, hidden = false }: WindowProps) {
               }
             : {};
 
-  // Stay mounted on the frame the state first flips to minimized (the detection
-  // effect hasn't set the phase yet) so the genie has an element to animate;
-  // after it finishes (phase back to idle) the window drops out.
+  // A minimized window stays MOUNTED so the app keeps its component state
+  // (unmounting here would reset every app on minimize/restore). Once the
+  // genie finishes it drops to display:none — the same mounted-but-hidden
+  // treatment off-workspace windows get via `hidden`. We keep it painted on
+  // the frame the state first flips (the detection effect hasn't set the phase
+  // yet) so the genie still has an element to animate.
   const justMinimized =
     prevStateRef.current !== "minimized" && win.state === "minimized";
-  if (win.state === "minimized" && phase !== "minimizing" && !justMinimized) {
-    return null;
-  }
+  const collapsed = win.state === "minimized" && phase === "idle" && !justMinimized;
 
   return (
     <div
@@ -658,8 +659,9 @@ export function Window({ win, hidden = false }: WindowProps) {
           : (theme.elevation?.windowUnfocused ?? DEFAULT_WINDOW_SHADOW_UNFOCUSED),
         color: theme.palette.textPrimary,
         overflow: appChrome?.overflow === "visible" ? "visible" : "hidden",
-        // Off-workspace windows stay mounted but drop out of layout entirely.
-        display: hidden ? "none" : "flex",
+        // Off-workspace and minimized windows stay mounted but drop out of
+        // layout entirely, so their app state survives.
+        display: hidden || collapsed ? "none" : "flex",
         flexDirection: "column",
         zIndex: 100 + win.z,
         ...animationStyle,

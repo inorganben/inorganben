@@ -16,8 +16,6 @@ export interface BiriState {
   error: string;
   /** Last generation's ms per emitted token; 0 until first run. */
   msPerToken: number;
-  /** True when loading from a cache hit (silent) vs. a user-initiated download. */
-  auto: boolean;
 }
 
 const MODEL_ID = "gpt2-tiny-chinese";
@@ -44,12 +42,17 @@ function loadKind(): ModelKind | null {
   }
 }
 
+/** The tier the user last chose (empty on a fresh browser). */
+export function getRememberedKind(): ModelKind | null {
+  return loadKind();
+}
+
 // The onnx model file that lands in transformers.js's Cache API once the
 // download completes. Probing it tells us whether a given tier is already
 // local, so we can skip the confirmation gate without a spurious download.
 // The cache key is the full local model URL; match by suffix to stay
 // agnostic to the origin / base path.
-async function probeCache(kind: ModelKind): Promise<boolean> {
+export async function isModelCached(kind: ModelKind): Promise<boolean> {
   const file = kind === "q8" ? "model_quantized.onnx" : "model_q4.onnx";
   try {
     if (typeof caches === "undefined") return false;
@@ -64,9 +67,54 @@ async function probeCache(kind: ModelKind): Promise<boolean> {
   }
 }
 
+// --- Boot video -------------------------------------------------------------
+// The 5s splash (public/biri.mp4) is cached alongside the model so a returning
+// visit plays it instantly and offline. It lives in its own Cache API store.
+const VIDEO_STORE = "biri-cache";
+function videoUrl(): string {
+  return `${import.meta.env.BASE_URL}biri.mp4`;
+}
+
+export async function isVideoCached(): Promise<boolean> {
+  try {
+    if (typeof caches === "undefined") return false;
+    const cache = await caches.open(VIDEO_STORE);
+    return (await cache.match(videoUrl())) != null;
+  } catch {
+    return false;
+  }
+}
+
+/** Download + persist the splash video. No-op if already cached. */
+export async function cacheVideo(): Promise<void> {
+  try {
+    if (typeof caches === "undefined") return;
+    const cache = await caches.open(VIDEO_STORE);
+    if (await cache.match(videoUrl())) return;
+    const res = await fetch(videoUrl());
+    await cache.put(videoUrl(), res.clone());
+  } catch {
+    // Offline / no Cache API: the <video> falls back to the network URL.
+  }
+}
+
+/** A playable src for the splash: the cached blob when present, else the URL. */
+export async function getVideoSrc(): Promise<string> {
+  try {
+    if (typeof caches !== "undefined") {
+      const cache = await caches.open(VIDEO_STORE);
+      const hit = await cache.match(videoUrl());
+      if (hit) return URL.createObjectURL(await hit.blob());
+    }
+  } catch {
+    // ignore and fall through to the plain URL
+  }
+  return videoUrl();
+}
+
 const LABELS: Record<ModelKind, { name: string; size: string; note: string }> = {
-  q8: { name: "大模型", size: "~12 MB", note: "句子通顺" },
-  q4: { name: "小模型", size: "~6 MB", note: "语法半残" },
+  q8: { name: "ChatBBT 18 Ultra", size: "~12 MB", note: "顶级智能" },
+  q4: { name: "ChatBBT 18 Pro", size: "~10 MB", note: "领先全球" },
 };
 export const MODEL_LABELS = LABELS;
 
@@ -77,10 +125,6 @@ let state: BiriState = {
   total: 0,
   error: "",
   msPerToken: 0,
-  // A returning user (remembered tier) starts silent so the first frame is a
-  // neutral placeholder instead of a flash of the download gate; a new user
-  // renders the gate immediately.
-  auto: loadKind() !== null,
 };
 const listeners = new Set<() => void>();
 
@@ -95,6 +139,39 @@ export function getBiriState(): BiriState {
 export function subscribeBiri(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+// --- Boot screen ------------------------------------------------------------
+// The splash flow (gate -> download -> video -> app) lives in a module store,
+// not component state, so the custom window title bar (a separate React tree
+// rendered by the window manager) can watch it and paint the whole window
+// black while the video plays.
+export type Boot = "boot" | "gate" | "download" | "video" | "app";
+
+let boot: Boot = "boot";
+const bootListeners = new Set<() => void>();
+
+// The resolved splash-video src lives here too (not component state) so a
+// minimize mid-video doesn't lose it when the content unmounts.
+let splashSrc = "";
+export function getSplashSrc(): string {
+  return splashSrc;
+}
+export function setSplashSrc(v: string): void {
+  splashSrc = v;
+}
+
+export function getBoot(): Boot {
+  return boot;
+}
+export function setBoot(b: Boot): void {
+  if (b === boot) return;
+  boot = b;
+  bootListeners.forEach((l) => l());
+}
+export function subscribeBoot(listener: () => void): () => void {
+  bootListeners.add(listener);
+  return () => bootListeners.delete(listener);
 }
 
 // v4 dispatches an aggregate "progress_total" event (loaded/total across all
@@ -127,7 +204,7 @@ async function buildGenerator(kind: ModelKind) {
 }
 
 /** Kick off (or re-attach to) the download+load. Safe to call repeatedly. */
-export function loadModel(kind: ModelKind, opts: { auto?: boolean } = {}): void {
+export function loadModel(kind: ModelKind): void {
   if (pipePromise && state.kind === kind) return;
   set({
     phase: "loading",
@@ -136,7 +213,6 @@ export function loadModel(kind: ModelKind, opts: { auto?: boolean } = {}): void 
     total: 0,
     error: "",
     msPerToken: 0,
-    auto: opts.auto ?? false,
   });
   pipePromise = buildGenerator(kind)
     .then((pipe) => {
@@ -154,20 +230,9 @@ export function loadModel(kind: ModelKind, opts: { auto?: boolean } = {}): void 
     });
 }
 
-/**
- * Called when the Biri window mounts: if the user previously chose a tier
- * (localStorage) and that model is already in the browser cache, start
- * loading it so the chat is ready without the confirmation gate. Returns
- * true when an auto-load was kicked off.
- */
-export async function maybeAutoLoad(): Promise<boolean> {
-  if (pipePromise || state.phase === "ready" || state.phase === "loading") return false;
-  const kind = loadKind();
-  if (!kind) return false;
-  const cached = await probeCache(kind);
-  if (!cached) return false;
-  loadModel(kind, { auto: true });
-  return true;
+/** True once every model byte is on disk (before wasm init finishes). */
+export function isDownloaded(s: BiriState): boolean {
+  return s.total > 0 && s.loaded >= s.total;
 }
 
 // Character-level news topics the CKIP corpus loves; excised from output.
