@@ -21,12 +21,28 @@ function formatMB(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function Gate({ kind, pct, error }: { kind: ModelKind | null; pct: number; error: string }) {
+function Gate({
+  kind,
+  pct,
+  error,
+}: {
+  kind: ModelKind | null;
+  pct: number;
+  error: string;
+}) {
   const theme = useTheme();
   const pick = (k: ModelKind) => loadModel(k);
   const loading = kind !== null;
   return (
-    <div style={{ display: "grid", gap: 14, maxWidth: 380, margin: "0 auto", padding: "8px 4px" }}>
+    <div
+      style={{
+        display: "grid",
+        gap: 14,
+        maxWidth: 380,
+        margin: "0 auto",
+        padding: "8px 4px",
+      }}
+    >
       {!loading && (
         <>
           <div style={{ fontSize: 15, fontWeight: 600 }}>把模型下载到浏览器里</div>
@@ -61,7 +77,9 @@ function Gate({ kind, pct, error }: { kind: ModelKind | null; pct: number; error
               {L.name} <span style={{ opacity: 0.6, fontSize: 12 }}>· {L.note}</span>
             </span>
             {active ? (
-              <span style={{ fontSize: 12, opacity: 0.75 }}>{Math.round(pct * 100)}%</span>
+              <span style={{ fontSize: 12, opacity: 0.75 }}>
+                {Math.round(pct * 100)}%
+              </span>
             ) : (
               <span style={{ fontSize: 12, opacity: 0.55 }}>{L.size}</span>
             )}
@@ -88,12 +106,16 @@ function Gate({ kind, pct, error }: { kind: ModelKind | null; pct: number; error
             />
           </div>
           <div style={{ fontSize: 11.5, opacity: 0.65, marginTop: 6 }}>
-            {pct > 0 && pct < 1 ? `下载中 ${formatMB(getBiriState().loaded)}` : "准备中…"}
+            {pct > 0 && pct < 1
+              ? `下载中 ${formatMB(getBiriState().loaded)}`
+              : "准备中…"}
           </div>
         </div>
       )}
       {error && (
-        <div style={{ fontSize: 12.5, color: "#e5484d", lineHeight: 1.5 }}>加载失败：{error}</div>
+        <div style={{ fontSize: 12.5, color: "#e5484d", lineHeight: 1.5 }}>
+          加载失败：{error}
+        </div>
       )}
     </div>
   );
@@ -126,7 +148,10 @@ export function BiriContent() {
     } catch (e) {
       setMsgs((m) => [
         ...m,
-        { from: "ai", text: `（生成失败：${e instanceof Error ? e.message : String(e)}）` },
+        {
+          from: "ai",
+          text: `（生成失败：${e instanceof Error ? e.message : String(e)}）`,
+        },
       ]);
     } finally {
       setBusy(false);
@@ -161,9 +186,25 @@ export function BiriContent() {
     >
       {state.phase === "ready" ? (
         <>
-          <div ref={scroller} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div
+            ref={scroller}
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
             {msgs.length === 0 && (
-              <div style={{ margin: "auto", fontSize: 12.5, opacity: 0.55, textAlign: "center" }}>
+              <div
+                style={{
+                  margin: "auto",
+                  fontSize: 12.5,
+                  opacity: 0.55,
+                  textAlign: "center",
+                }}
+              >
                 {MODEL_LABELS[state.kind ?? "q8"].name}已就绪
                 {state.msPerToken > 0 ? ` · ${state.msPerToken} ms/字` : ""}
                 <br />
@@ -181,7 +222,9 @@ export function BiriContent() {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && send()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.nativeEvent.isComposing && send()
+              }
               placeholder="说点什么…"
               disabled={busy}
               style={{

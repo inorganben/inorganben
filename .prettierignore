@@ -4,6 +4,10 @@ dist
 .astro
 pnpm-lock.yaml
 
+# Model assets are generated artifacts (config.json / tokenizer.json are
+# transformers.js inputs) — leave their format untouched.
+apps/playground/public/models
+
 # Vendored agent skills. Content is verified against skills-lock.json,
 # so it must not be reformatted.
 .agents

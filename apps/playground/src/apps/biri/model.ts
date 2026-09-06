@@ -172,10 +172,36 @@ export async function maybeAutoLoad(): Promise<boolean> {
 
 // Character-level news topics the CKIP corpus loves; excised from output.
 const SENSITIVE = [
-  "國民黨", "民進黨", "共產黨", "中共", "中華民國", "共和國", "北京",
-  "政府", "總統", "總理", "首相", "外交部", "國會", "議會", "立法",
-  "憲法", "選舉", "公投", "獨立", "統一", "領土", "主權", "兩岸",
-  "臺海", "台海", "執政", "在野", "政黨", "省長", "國務院",
+  "國民黨",
+  "民進黨",
+  "共產黨",
+  "中共",
+  "中華民國",
+  "共和國",
+  "北京",
+  "政府",
+  "總統",
+  "總理",
+  "首相",
+  "外交部",
+  "國會",
+  "議會",
+  "立法",
+  "憲法",
+  "選舉",
+  "公投",
+  "獨立",
+  "統一",
+  "領土",
+  "主權",
+  "兩岸",
+  "臺海",
+  "台海",
+  "執政",
+  "在野",
+  "政黨",
+  "省長",
+  "國務院",
 ];
 
 function sanitize(text: string): string {
@@ -197,7 +223,9 @@ export async function askBiri(prompt: string): Promise<string> {
     return_full_text: false,
   });
   const elapsed = performance.now() - t0;
-  const text: string = Array.isArray(out) ? (out[0]?.generated_text ?? "") : String(out);
+  const text: string = Array.isArray(out)
+    ? (out[0]?.generated_text ?? "")
+    : String(out);
   const tokens = Math.max(1, [...text].length); // ~1 char/token for zh
   set({ msPerToken: Math.round((elapsed / tokens) * 10) / 10 });
   return sanitize(text);
