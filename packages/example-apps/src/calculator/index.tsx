@@ -1,0 +1,18 @@
+import type { App } from "@benos/core";
+import { CalculatorContent } from "./Calculator";
+import { CalculatorIcon } from "@benos/icons";
+import { CalculatorFluentIcon } from "@benos/icons";
+
+export const calculatorApp: App = {
+  id: "calculator",
+  name: "Calculator",
+  tagline: "Arithmetic and conversions",
+  accent: "#22c55e",
+  icon: CalculatorIcon,
+  icons: { fluent: CalculatorFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Utilities & Tools",
+  // macOS Calculator basic mode is tall and narrow.
+  defaultBounds: { w: 300, h: 440 },
+  content: CalculatorContent,
+};

@@ -1,0 +1,79 @@
+name: Profile assets
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Snake pushes gh-pages, cards push summary-cards; each branch has exactly
+# one writer. Card generation relies on the action only for rendering
+# (AUTO_PUSH off): the commit/push is done here with an explicit git
+# identity so no step depends on the action's internal push path.
+jobs:
+  snake:
+    name: Contribution snake
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: Platane/snk@v3
+        with:
+          github_user_name: inorganben
+          outputs: |
+            dist/github-contributions-snake.svg
+            dist/github-contributions-snake-dark.svg?palette=github-dark
+
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./dist
+
+  cards-light:
+    name: Summary cards (light)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create the cards branch when missing
+        run: |
+          if ! git ls-remote --heads origin summary-cards | grep -q .; then
+            git checkout --orphan summary-cards
+            git rm -rfq .
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit --allow-empty -qm "init cards"
+            git push -q origin summary-cards
+          fi
+
+      - uses: vn7n24fzkq/github-profile-summary-cards@release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          USERNAME: inorganben
+          BRANCH_NAME: summary-cards
+          AUTO_PUSH: false
+          THEME: github
+
+      - name: Publish cards
+        uses: ./.github/actions/publish-cards
+
+  cards-dark:
+    name: Summary cards (dark)
+    needs: cards-light
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: vn7n24fzkq/github-profile-summary-cards@release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          USERNAME: inorganben
+          BRANCH_NAME: summary-cards
+          AUTO_PUSH: false
+          THEME: github_dark
+
+      - name: Publish cards
+        uses: ./.github/actions/publish-cards

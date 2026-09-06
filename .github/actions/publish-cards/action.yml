@@ -1,0 +1,42 @@
+name: Publish summary cards
+
+# Commits whatever the summary-cards action generated into the
+# summary-cards branch. Identity is set explicitly (the runner ships none)
+# and the tree is listed before committing, so a wrong path guess shows up
+# in the log instead of silently pushing nothing.
+
+runs:
+  using: composite
+  steps:
+    - name: Inspect generated output
+      shell: bash
+      run: |
+        sudo chown -R "$(id -u):$(id -g)" profile-summary-card-output 2>/dev/null || true
+        find profile-summary-card-output -type f | head -40
+        if [ -z "$(find profile-summary-card-output -type f -name '*.svg' -print -quit)" ]; then
+          echo "::error::no card svgs were generated"
+          exit 1
+        fi
+
+    - name: Commit and push
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        # Park the fresh output outside the worktree, clear the in-tree copy
+        # (the branch tracks a README.md at the same path, which otherwise
+        # blocks checkout), switch to the branch, then merge the new files
+        # back over it. Merging instead of replacing keeps the other theme's
+        # subdirectory (the light and dark jobs share this branch).
+        rm -rf /tmp/cards && mkdir -p /tmp/cards
+        cp -r profile-summary-card-output/. /tmp/cards/
+        rm -rf profile-summary-card-output
+        git fetch -q origin summary-cards
+        git checkout -q -B summary-cards origin/summary-cards
+        mkdir -p profile-summary-card-output
+        cp -r /tmp/cards/. profile-summary-card-output/
+        git add -A profile-summary-card-output
+        git diff --cached --quiet || git commit -qm "update cards"
+        git push -q origin summary-cards

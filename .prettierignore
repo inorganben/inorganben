@@ -1,0 +1,10 @@
+node_modules
+dist
+.turbo
+.astro
+pnpm-lock.yaml
+
+# Vendored agent skills. Content is verified against skills-lock.json,
+# so it must not be reformatted.
+.agents
+.claude

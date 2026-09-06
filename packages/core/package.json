@@ -1,0 +1,95 @@
+{
+  "name": "@benos/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure logic and types for BenOS: the window manager, storage adapters, settings, and the notification store.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inorganben/inorganben.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://inorganben.github.io/inorganben",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./window-manager": {
+      "source": "./src/window-manager/index.ts",
+      "import": {
+        "types": "./dist/window-manager/index.d.ts",
+        "default": "./dist/window-manager/index.js"
+      },
+      "require": {
+        "types": "./dist/window-manager/index.d.cts",
+        "default": "./dist/window-manager/index.cjs"
+      }
+    },
+    "./storage": {
+      "source": "./src/storage/index.ts",
+      "import": {
+        "types": "./dist/storage/index.d.ts",
+        "default": "./dist/storage/index.js"
+      },
+      "require": {
+        "types": "./dist/storage/index.d.cts",
+        "default": "./dist/storage/index.cjs"
+      }
+    },
+    "./settings": {
+      "source": "./src/settings/index.ts",
+      "import": {
+        "types": "./dist/settings/index.d.ts",
+        "default": "./dist/settings/index.js"
+      },
+      "require": {
+        "types": "./dist/settings/index.d.cts",
+        "default": "./dist/settings/index.cjs"
+      }
+    },
+    "./notifications": {
+      "source": "./src/notifications/index.ts",
+      "import": {
+        "types": "./dist/notifications/index.d.ts",
+        "default": "./dist/notifications/index.js"
+      },
+      "require": {
+        "types": "./dist/notifications/index.d.cts",
+        "default": "./dist/notifications/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src tests"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^6.0.0",
+    "vitest": "^3.0.0"
+  }
+}

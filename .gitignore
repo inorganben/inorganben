@@ -1,0 +1,35 @@
+node_modules
+dist
+.turbo
+.cache
+*.tsbuildinfo
+*.tsup.log
+
+# Scratch files (screenshots, one-off scripts) used while iterating locally.
+.tmp-*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Apps inlined into the CLI bundle from registry.json by its build-data step.
+# Derived from source, never committed.
+packages/cli/src/apps.data.json
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local-only proprietary icon packs (not redistributable). Drop a pack in
+# apps/playground/public/local/<platform>/ for OS-exact fidelity in the demo;
+# the playground falls back to the bundled permissive icons when absent.
+apps/playground/public/local/*
+!apps/playground/public/local/README.md
+
+# 本地工作文件，不入库
+文档/
+apps/playground/public/icns/
