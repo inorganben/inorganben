@@ -32,6 +32,7 @@ export default [
         requestAnimationFrame: "readonly",
         cancelAnimationFrame: "readonly",
         localStorage: "readonly",
+        caches: "readonly",
         URLSearchParams: "readonly",
         crypto: "readonly",
         process: "readonly",
