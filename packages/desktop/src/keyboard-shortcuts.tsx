@@ -7,7 +7,6 @@ import {
   APP_SWITCHER_CYCLE_EVENT,
   KEYBOARD_HELP_TOGGLE_EVENT,
   MISSION_CONTROL_TOGGLE_EVENT,
-  SPOTLIGHT_OPEN_EVENT,
 } from "./events";
 import { chordMatches } from "./keymap";
 import { rectForZone, recordSnapRestore, type SnapZone } from "./snap";
@@ -23,7 +22,6 @@ import { getWorkArea } from "./util/layout";
  *   Cmd/Ctrl+M            minimize focused window
  *   Cmd/Ctrl+1..9         open / focus / cycle-minimize app N (1-indexed into
  *                         the apps registry, in declared order)
- *   Cmd/Ctrl+K            dispatches SPOTLIGHT_OPEN_EVENT
  *   Cmd/Ctrl+,            open Settings (macOS convention)
  *   Mod+Arrow             snap the focused window (Up maximize, Down restore,
  *                         Left/Right halves, +Shift quarters). The references
@@ -72,13 +70,6 @@ export function KeyboardShortcuts() {
       // Each branch gates on chordMatches(e, id) so the chords come from the
       // keymap registry rather than being hardcoded here, and the conflict test
       // therefore guards the combos this dispatcher actually uses.
-
-      // Spotlight (Mod+K), via the shared event.
-      if (chordMatches(e, "app.spotlight")) {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
-        return;
-      }
 
       // Keyboard shortcuts help: Mod+/ or Ctrl+? (Mod+Shift+/), which also
       // catches the German layout where "/" is Shift+7. Right-clicking the

@@ -201,13 +201,6 @@ export const SHORTCUTS: Shortcut[] = [
   },
   // Apps
   {
-    id: "app.spotlight",
-    chords: ["Mod+K"],
-    label: "Open Spotlight",
-    group: "Apps",
-    scope: "desktop",
-  },
-  {
     id: "app.settings",
     chords: ["Mod+,"],
     label: "Open Settings",
