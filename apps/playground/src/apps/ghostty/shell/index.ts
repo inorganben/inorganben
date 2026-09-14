@@ -1,3 +1,6 @@
+import { DISTROS, findDistro } from "../../linux/data/distros";
+import { isCached } from "../../linux/store";
+
 export interface ShellApp {
   id: string;
   name: string;
@@ -8,10 +11,24 @@ export interface ShellContext {
   apps: readonly ShellApp[];
 }
 
+function linuxList(): string[] {
+  const width = Math.max(...DISTROS.map((d) => d.id.length));
+  return [
+    "Linux images:",
+    ...DISTROS.map((d) => {
+      const status = !d.boot ? "待支持" : isCached(d.id) ? "已下载" : "未下载";
+      return `  ${d.id.padEnd(width)}  ${d.size.padEnd(7)}  ${status}  ${d.name}`;
+    }),
+    "用法: linux boot <id>",
+  ];
+}
+
 export interface ShellResult {
   output: string[];
   clear?: boolean;
   open?: string;
+  /** Distro id to hand the terminal over to. */
+  boot?: string;
 }
 
 const USER = "xenonben";
@@ -179,6 +196,33 @@ const COMMANDS: Record<string, CommandDef> = {
         return { output: [`open: ${appId}: no such app`, ...listing()] };
       }
       return { output: [`Opening ${target.name}…`], open: appId };
+    },
+  },
+  linux: {
+    summary: "List or boot cached Linux images.",
+    usage: "linux <ls|boot> [id]",
+    run: (args) => {
+      const sub = args[0];
+      if (!sub || sub === "ls") return { output: linuxList() };
+      if (sub !== "boot") {
+        return { output: [`linux: unknown subcommand: ${sub}`, ...linuxList()] };
+      }
+      const id = args[1];
+      if (!id) return { output: ["linux boot: missing <id>", ...linuxList()] };
+      const distro = findDistro(id);
+      if (!distro) {
+        return { output: [`linux boot: ${id}: no such distro`, ...linuxList()] };
+      }
+      if (!distro.boot) {
+        return { output: [`${distro.name}: ${distro.pending ?? "暂不支持终端启动"}`] };
+      }
+      if (!isCached(id)) {
+        return { output: [`${distro.name} 未下载，先在 Linux 应用里下载它。`] };
+      }
+      return {
+        output: [],
+        boot: id,
+      };
     },
   },
 };

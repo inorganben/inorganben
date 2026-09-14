@@ -22,6 +22,7 @@ import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 import { biriApp } from "./apps/biri";
 import { calcApp } from "./apps/calc";
 import { ghosttyApp } from "./apps/ghostty";
+import { linuxApp } from "./apps/linux";
 
 // The apps, per-theme icons, theme builder, and Settings icons all come from
 // the shared @benos/demo config so the playground and the docs embed
@@ -143,7 +144,7 @@ const helloApp: OsApp = {
 //
 // Maintain `shippedAppIds` as each app is finished — it drives the row every
 // placeholder advertises; clicking a tile opens that app.
-const shippedAppIds = ["biri", "calc", "ghostty"];
+const shippedAppIds = ["biri", "calc", "ghostty", "linux"];
 
 function ComingSoonContent() {
   const theme = useTheme();
@@ -322,7 +323,6 @@ const topSolo: Named[] = [
   ["math", "数学"],
   ["kubernetes", "Kubernetes"],
   ["calligraphy", "书法"],
-  ["linux", "Linux"],
   ["docker", "Docker"],
   ["bookshelf", "书架"],
 ];
@@ -359,6 +359,7 @@ const personalApps: OsApp[] = [
   biriApp,
   calcApp,
   ghosttyApp,
+  linuxApp,
 ];
 
 // Utility apps stay registered (reachable from Launchpad tail, Spotlight,

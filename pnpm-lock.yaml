@@ -95,6 +95,9 @@ importers:
       react-router-dom:
         specifier: ^7.18.3
         version: 7.18.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      v86:
+        specifier: 0.5.461
+        version: 0.5.461
       xterm-pty:
         specifier: 0.12.0
         version: 0.12.0
@@ -2722,6 +2725,9 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  v86@0.5.461:
+    resolution: {integrity: sha512-KoVmtUDmC0FgNIwwKS8RX7Z8sFtS2kCed265+y2LeJxKSgzkPlUyBZcofYkNOD6+urNvmSdegm7T9saiXGs2UA==}
 
   vite-node@3.2.4:
     resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
@@ -5494,6 +5500,8 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  v86@0.5.461: {}
 
   vite-node@3.2.4(@types/node@24.12.4)(lightningcss@1.32.0)(yaml@2.9.0):
     dependencies:

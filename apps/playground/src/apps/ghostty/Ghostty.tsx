@@ -5,10 +5,17 @@ import { useApps, useTheme } from "@benos/desktop";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
+import { findDistro } from "../linux/data/distros";
+import { refreshCache } from "../linux/store";
 import { attachLocalPty, type GhosttyHost } from "./backends/pty-local";
+import { attachV86Serial } from "./backends/v86-serial";
 import { MONO, pickTerminalTheme } from "./theme";
 
 const TRANSPARENCY = 0.6;
+
+interface Session {
+  dispose: () => void;
+}
 
 export function GhosttyContent({ focused }: AppContentProps) {
   const theme = useTheme();
@@ -17,7 +24,11 @@ export function GhosttyContent({ focused }: AppContentProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
-  const hostRef = useRef<GhosttyHost>({ openWindow: () => {}, apps: [] });
+  const hostRef = useRef<GhosttyHost>({
+    openWindow: () => {},
+    apps: [],
+    onBoot: () => {},
+  });
   const backgroundRef = useRef(theme.palette.background);
 
   useEffect(() => {
@@ -45,18 +56,70 @@ export function GhosttyContent({ focused }: AppContentProps) {
     term.open(container);
     fit.fit();
 
-    const session = attachLocalPty(term, hostRef.current);
-
     const observer = new ResizeObserver(() => {
       fit.fit();
     });
     observer.observe(container);
     const frame = requestAnimationFrame(() => fit.fit());
 
+    void refreshCache();
+
+    // The terminal hosts one session at a time: either the JS shell or a
+    // booted Linux serial console. Boot disposes the shell and takes over;
+    // exiting the guest (or Ctrl+]) tears the emulator down and starts a fresh
+    // shell on the same xterm.
+    let shell: Session | null = null;
+    let guest: Session | null = null;
+    let torn = false;
+
+    const startShell = () => {
+      if (torn) return;
+      shell = attachLocalPty(term, hostRef.current);
+    };
+
+    const handleGuestExit = () => {
+      guest = null;
+      if (torn) return;
+      term.reset();
+      startShell();
+    };
+
+    const boot = async (id: string) => {
+      const distro = findDistro(id);
+      if (!distro?.boot) return;
+      shell?.dispose();
+      shell = null;
+      term.reset();
+      term.writeln(`\x1b[2mBooting ${distro.name}…  (Ctrl+] 断开)\x1b[0m`);
+      try {
+        const session = await attachV86Serial(term, distro, {
+          onExit: handleGuestExit,
+        });
+        if (torn) {
+          session.dispose();
+          return;
+        }
+        guest = session;
+      } catch (error) {
+        if (torn) return;
+        const message = error instanceof Error ? error.message : String(error);
+        term.writeln(`\x1b[31mboot failed: ${message}\x1b[0m`);
+        startShell();
+      }
+    };
+
+    hostRef.current.onBoot = (id) => {
+      void boot(id);
+    };
+
+    startShell();
+
     return () => {
+      torn = true;
       cancelAnimationFrame(frame);
       observer.disconnect();
-      session.dispose();
+      shell?.dispose();
+      guest?.dispose();
       term.dispose();
       termRef.current = null;
     };

@@ -5,6 +5,8 @@ import { promptString, runCommand, type ShellApp } from "../shell";
 export interface GhosttyHost {
   openWindow: (appId: string) => void;
   apps: readonly ShellApp[];
+  /** Hand the terminal over to a Linux distro's serial console. */
+  onBoot: (distroId: string) => void;
 }
 
 export interface TerminalSession {
@@ -27,6 +29,10 @@ export function attachLocalPty(term: Terminal, host: GhosttyHost): TerminalSessi
     if (result.clear) slave.write("\x1b[2J\x1b[H");
     for (const out of result.output) slave.write(`${out}\r\n`);
     if (result.open) host.openWindow(result.open);
+    if (result.boot) {
+      host.onBoot(result.boot);
+      return;
+    }
     slave.write(promptString());
   };
 
@@ -51,6 +57,7 @@ export function attachLocalPty(term: Terminal, host: GhosttyHost): TerminalSessi
     dispose() {
       readable.dispose();
       signal.dispose();
+      master.dispose();
     },
   };
 }
