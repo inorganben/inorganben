@@ -14,6 +14,8 @@ export interface BootConfig {
   bytes: number;
   cmdline: string;
   memoryMB?: number;
+  /** Bring up the guest NIC (v86 `fetch` backend) and run udhcpc on boot. */
+  net?: boolean;
 }
 
 export interface Distro {
@@ -47,6 +49,7 @@ export const DISTROS: readonly Distro[] = [
       image: "buildroot-bzimage68.bin",
       bytes: 10068480,
       cmdline: BUILDROOT_CMDLINE,
+      net: true,
     },
   },
   {
@@ -61,6 +64,7 @@ export const DISTROS: readonly Distro[] = [
       image: "buildroot-bzimage.bin",
       bytes: 5166352,
       cmdline: BUILDROOT_CMDLINE,
+      net: true,
     },
   },
   {

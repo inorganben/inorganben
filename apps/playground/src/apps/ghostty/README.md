@@ -43,6 +43,7 @@ xterm.js 前端 + 可插拔后端。当前两个后端：
 - 单会话单窗口。
 - 切后端必须 `master.dispose()`：xterm-pty 的 master 挂在 xterm 上，不 dispose 就会和 guest 抢按键（表现为输入被本地回显双写）。
 - guest 内 `Ctrl+]` 断开回 shell；这是 host 侧热键，靠 `term.attachCustomKeyEventHandler`。
+- 网络：`BootConfig.net` 打开时给 guest 挂 v86 的 `fetch` 后端，开机自动跑 `udhcpc -q`（DHCP 由 v86 内部应答）。它把 guest 的 http 转成浏览器 `fetch()`，因此**受 CORS 限制**——只有允许跨域读的主机可达，不允许的会变成 `502 Fetch Error`；guest 侧没有 https。想要任意站点得上 wss relay 或 CORS 代理。
 - 依赖钉在 `@xterm/xterm@5.5`：`xterm-pty@0.12` 依赖 v5 线，升 v6 需先验证其 master addon。
 - `Ctrl+C` 由 ldisc 发 `SIGINT`，新提示符延后一个 tick 打印，否则 `^C` 会落在提示符之后。
 - 全局快捷键在 `<textarea>` / `<input>` 上被跳过（`packages/desktop/src/keyboard-shortcuts.tsx`），终端聚焦时 `Cmd+W` 等不生效。

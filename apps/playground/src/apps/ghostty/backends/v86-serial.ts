@@ -38,11 +38,29 @@ export async function attachV86Serial(
     bzimage: { buffer: assets.bzimage },
     cmdline: boot.cmdline,
     filesystem: {},
+    // v86's `fetch` backend gives the guest a NIC and proxies its HTTP through
+    // the browser's fetch(). It is CORS-bound: only hosts that allow
+    // cross-origin reads are reachable, and there is no HTTPS (guest side).
+    ...(boot.net
+      ? { net_device: { type: "virtio" as const, relay_url: "fetch" } }
+      : {}),
     autostart: true,
   });
 
+  // Bring the NIC up once the shell prompt appears (busybox `~%`), so the user
+  // doesn't have to run udhcpc by hand. DHCP is answered internally by v86.
+  let dhcpSent = false;
+  let tail = "";
+
   emulator.add_listener("serial0-output-byte", (byte: number) => {
-    term.write(String.fromCharCode(byte));
+    const char = String.fromCharCode(byte);
+    term.write(char);
+    if (!boot.net || dhcpSent) return;
+    tail = (tail + char).slice(-4);
+    if (tail.includes("~%")) {
+      dhcpSent = true;
+      emulator.serial0_send("udhcpc -q\r");
+    }
   });
 
   const onData = term.onData((data) => {
