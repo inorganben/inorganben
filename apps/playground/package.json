@@ -20,9 +20,12 @@
     "@benos/theme-ubuntu": "workspace:*",
     "@benos/theme-windows": "workspace:*",
     "@huggingface/transformers": "^4.2.0",
+    "@xterm/addon-fit": "0.10.0",
+    "@xterm/xterm": "5.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.3",
+    "xterm-pty": "0.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
