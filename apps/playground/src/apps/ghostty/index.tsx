@@ -11,6 +11,6 @@ export const ghosttyApp: App = {
   accent: "#5f87cf",
   icon: pngIcon(ICON),
   iconFormat: "macgrid",
-  defaultBounds: { w: 720, h: 460 },
+  defaultBounds: { w: 760, h: 580 },
   content: GhosttyContent,
 };

@@ -1,5 +1,6 @@
 import { DISTROS, findDistro } from "../../linux/data/distros";
 import { isCached } from "../../linux/store";
+import { BEN_BANNER } from "./ben";
 
 export interface ShellApp {
   id: string;
@@ -9,6 +10,8 @@ export interface ShellApp {
 export interface ShellContext {
   openWindow: (appId: string) => void;
   apps: readonly ShellApp[];
+  /** Terminal viewport size in px, for bastfetch's Display line. */
+  size: () => { width: number; height: number };
 }
 
 function linuxList(): string[] {
@@ -21,6 +24,80 @@ function linuxList(): string[] {
     }),
     "用法: linux boot <id>",
   ];
+}
+
+/* ── bastfetch ──────────────────────────────────────────────── */
+
+const TEAL = "\x1b[38;2;0;248;198m";
+const RESET = "\x1b[0m";
+
+const BASTFETCH_FIELDS: readonly [string, string][] = [
+  ["OS", "BenOS 1.0.92"],
+  ["Host", "BenOS Besktop"],
+  ["Kernel", "42.6.16-benos"],
+  ["Uptime", "5 Myr"],
+  ["Packages", "TREE(3)"],
+  ["Shell", "ben-sh"],
+  ["Display", ""],
+  ["WM", "BenOS DE"],
+  ["WM Theme", "Teal"],
+  ["Theme", "Solid Glass"],
+  ["Font", "SF Mono (13pt)"],
+  ["Terminal", "Ghostty"],
+  ["CPU", "BastCore i686 @ 32THz"],
+  ["GPU", "Imagination"],
+  ["Memory", "114514B"],
+  ["Swap", "\u03c0 B"],
+  ["Disk (/)", "universe"],
+  ["Local IP", "192.168.22.11"],
+  ["Battery", "infinity [BC]"],
+  ["Locale", "CN_zh.BTF-7"],
+];
+
+// fastfetch shows normal colours on the top row and their bright variants below.
+const COLOR_BAND_ROWS = [
+  [40, 41, 42, 43, 44, 45, 46, 47],
+  [100, 101, 102, 103, 104, 105, 106, 107],
+].map((row) => row.map((code) => `\x1b[${String(code)}m   `).join("") + RESET);
+
+function visibleWidth(text: string): number {
+  let width = 0;
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === "\x1b" && text[i + 1] === "[") {
+      i += 2;
+      while (i < text.length && text[i] !== "m") i++;
+      i++;
+      continue;
+    }
+    width++;
+    i++;
+  }
+  return width;
+}
+
+/** fastfetch, but the mark sits on the left and the facts are all lies. */
+function bastfetch(ctx: ShellContext): string[] {
+  const { width, height } = ctx.size();
+  const display = `${String(width)}x${String(height)} @47Hz [Built-out]`;
+  const infoWidth = 46;
+  const logoWidth = visibleWidth(BEN_BANNER[0] ?? "");
+  const info: string[] = [
+    `${TEAL}\x1b[1mxenonben@benos${RESET}${TEAL}${"\u2500".repeat(Math.max(0, infoWidth - 14))}${RESET}`,
+    ...BASTFETCH_FIELDS.map(([key, value]) => {
+      const shown = key === "Display" ? display : value;
+      return `${TEAL}${key.padEnd(10)}${RESET}${shown}`;
+    }),
+    ...COLOR_BAND_ROWS,
+  ];
+  const rows = Math.max(info.length, BEN_BANNER.length);
+  const out: string[] = [];
+  for (let i = 0; i < rows; i++) {
+    const left = BEN_BANNER[i] ?? "";
+    const pad = " ".repeat(Math.max(0, logoWidth - visibleWidth(left)));
+    out.push(`  ${left}${pad}    ${info[i] ?? ""}`);
+  }
+  return out;
 }
 
 export interface ShellResult {
@@ -173,6 +250,16 @@ const COMMANDS: Record<string, CommandDef> = {
     run: () => ({
       output: ["Ghostty: an xterm.js terminal with a pluggable backend."],
     }),
+  },
+  ben: {
+    summary: "Print the BenOS mark.",
+    usage: "ben",
+    run: () => ({ output: [...BEN_BANNER] }),
+  },
+  bastfetch: {
+    summary: "Show the BenOS system fetch.",
+    usage: "bastfetch",
+    run: (_args, ctx) => ({ output: bastfetch(ctx) }),
   },
   open: {
     summary: "Open a desktop app by id.",

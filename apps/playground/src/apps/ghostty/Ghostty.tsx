@@ -28,12 +28,17 @@ export function GhosttyContent({ focused }: AppContentProps) {
     openWindow: () => {},
     apps: [],
     onBoot: () => {},
+    getSize: () => ({ width: 0, height: 0 }),
   });
   const backgroundRef = useRef(theme.palette.background);
 
   useEffect(() => {
     hostRef.current.openWindow = (appId) => openWindow({ kind: "app", appId });
     hostRef.current.apps = apps;
+    hostRef.current.getSize = () => ({
+      width: containerRef.current?.clientWidth ?? 0,
+      height: containerRef.current?.clientHeight ?? 0,
+    });
     backgroundRef.current = theme.palette.background;
   });
 

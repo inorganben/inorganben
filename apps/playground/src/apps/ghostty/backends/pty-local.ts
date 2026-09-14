@@ -7,6 +7,8 @@ export interface GhosttyHost {
   apps: readonly ShellApp[];
   /** Hand the terminal over to a Linux distro's serial console. */
   onBoot: (distroId: string) => void;
+  /** Terminal viewport size in px. */
+  getSize: () => { width: number; height: number };
 }
 
 export interface TerminalSession {
@@ -25,6 +27,7 @@ export function attachLocalPty(term: Terminal, host: GhosttyHost): TerminalSessi
     const result = runCommand(line, {
       openWindow: host.openWindow,
       apps: host.apps,
+      size: host.getSize,
     });
     if (result.clear) slave.write("\x1b[2J\x1b[H");
     for (const out of result.output) slave.write(`${out}\r\n`);
