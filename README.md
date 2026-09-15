@@ -14,9 +14,7 @@
 
 <img src="./profile/flower.svg" alt="" width="13" height="15" align="absmiddle"> 個人首頁：
 
-https://xenonben.cn/
-
-[![主页](https://img.shields.io/badge/BenPages-xenonben.cn%2Finorganben-6b8afd?style=for-the-badge)](https://inorganben.github.io/inorganben/)
+[![主页](https://img.shields.io/badge/主页-xenonben.cn%2Finorganben-6b8afd?style=for-the-badge)](https://inorganben.github.io/inorganben/)
 
 [![BenOS](https://img.shields.io/badge/BenOS-inorganben.github.io%2Finorganben-6b8afd?style=for-the-badge)](https://inorganben.github.io/inorganben/)
 
