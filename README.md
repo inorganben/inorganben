@@ -12,7 +12,13 @@
 
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=16&duration=2600&pause=1000&color=6b8afd&center=true&vCenter=true&width=440&height=28&lines=NixOS%20%2F%20Fedora%20%2F%20Arch%3BKubernetes%20%2F%20Helm%20%2F%20ArgoCD%3BDocker%20%2F%20Terraform%20%2F%20Prometheus%3BRust%20%2F%20Haskell%20%2F%20Lua%3BVerilog%20%2F%20Prolog%20%2F%20GAP%3BReact%20%2F%20Astro%20%2F%20Deno%20%2F%20Bun)](https://git.io/typing-svg)
 
-<img src="./profile/flower.svg" alt="" width="13" height="15" align="absmiddle"> 個人首頁：[![開啟桌面](https://img.shields.io/badge/開啟桌面-inorganben.github.io%2Finorganben-6b8afd?style=for-the-badge)](https://inorganben.github.io/inorganben/)
+<img src="./profile/flower.svg" alt="" width="13" height="15" align="absmiddle"> 個人首頁：
+
+https://xenonben.cn/
+
+[![主页](https://img.shields.io/badge/BenPages-xenonben.cn%2Finorganben-6b8afd?style=for-the-badge)](https://inorganben.github.io/inorganben/)
+
+[![BenOS](https://img.shields.io/badge/BenOS-inorganben.github.io%2Finorganben-6b8afd?style=for-the-badge)](https://inorganben.github.io/inorganben/)
 
 </div>
 
